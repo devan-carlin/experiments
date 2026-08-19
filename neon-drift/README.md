@@ -25,6 +25,11 @@ as the difficulty ramps. There is no end — the goal is distance.
 - CRT overlay: scanlines + radial vignette (CSS, `mix-blend-mode: multiply`).
 - Background: parallax grid + a rotating geometric mandala; expanding rings
   appear as intensity rises.
+- **Terrain shift:** a movement-driven parallax effect. The background grid,
+  mandala, and a layered terrain silhouette at the bottom stay flat when the
+  player is idle and bank up/down with horizontal velocity (eased, frame-rate
+  independent), so the world visibly tilts with your movement and settles back
+  to flat when you stop.
 - Camera: subtle tilt with velocity, slow zoom-in with progress, and
   full-screen "strobe" flashes.
 - Audio: fully procedural Web Audio synth (no samples) at 110 BPM — sawtooth
@@ -99,3 +104,8 @@ jump), `R` to restart, `M` to mute. Coyote time and jump buffering for feel.
   auto-respawn timer; the player now presses any key or clicks to respawn at
   the last checkpoint. Verified in browser — stays on the death screen until
   input, then respawns. 0 console errors.
+- Added **terrain shift** (2026-08-19): a movement-driven parallax effect where
+  the background grid, mandala, and a layered bottom terrain silhouette stay
+  flat when idle and bank up/down with horizontal velocity. Verified the shift
+  value eases 0 → +44 (right) → −40 (left) → 0 (release) with 0 console errors;
+  feel/visuals confirmed by the player.

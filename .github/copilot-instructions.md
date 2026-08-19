@@ -17,8 +17,8 @@ committed to git; raw conversation is not.
 
 - One folder per game (kebab-case, **no date suffix** — git tracks dates).
 - Each game folder contains:
-  - The game files (e.g. `*.html`).
-  - `GAME.md` — metadata + the working prompt + notes.
+  - The game files (e.g. `<game-name>.html`, or `index.html` if multi-file).
+  - `README.md` — metadata + the working prompt + notes.
 - Top-level `README.md` — index table of all games.
 - This file (`.github/copilot-instructions.md`) — the project system prompt.
 
@@ -42,8 +42,9 @@ A working prompt has these sections:
 
 The working prompt is the **source of truth** and a **living document**. Build
 the game to match it. As the project evolves — new features, refactors, bug
-fixes, changed mechanics — **update the working prompt in `GAME.md` to reflect
-the game's current state.** The prompt should always describe what the game
+fixes, changed mechanics — **update the working prompt in the game's
+`README.md` to reflect the game's current state.** The prompt should always
+describe what the game
 *does now*, not what it originally did. If the build reveals the prompt was
 missing something, add it. If a feature is removed or changed, revise the
 prompt to match.
@@ -54,11 +55,11 @@ current so it stays a faithful, self-contained description of the game as it
 exists today.
 
 ## Conventions
-
-- **`GAME.md`** per game:
+README.md`** per game:
   - Metadata table: Model (exact name), Date, Status, File link.
   - The full working prompt.
   - Notes: what worked, what didn't, how it was verified.
+- **Top-level Notes: what worked, what didn't, how it was verified.
 - **`README.md`** index table: `Game | Model | Date | Status`.
 - **Commit trailer**: end the commit body with
   `Generated-with: <exact model name>` for a git-native audit trail.
@@ -74,15 +75,15 @@ exists today.
 3. Confirm the working prompt with the user.
 4. Build the game to match the working prompt.
 5. Verify it runs (open in browser, check for console errors).
-6. Write `GAME.md` (metadata + working prompt + notes).
-7. Update the `README.md` index.
+6. Write the game's `README.md` (metadata + working prompt + notes).
+7. Update the top-level `README.md` index.
 8. Commit with the `Generated-with:` trailer and push.
 
 **Ongoing work (features, refactors, fixes):**
 
 1. Make the change to the game.
 2. Verify it runs (open in browser, check for console errors).
-3. **Update the working prompt in `GAME.md`** so it reflects the game's
-   current state — this is required, not optional.
-4. Add a note to `GAME.md` describing the change.
+3. **Update the working prompt in the game's `README.md`** so it reflects the
+   game's current state — this is required, not optional.
+4. Add a note to the game's `README.md` describing the change.
 5. Commit with the `Generated-with:` trailer and push.

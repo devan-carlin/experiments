@@ -15,9 +15,9 @@ dependencies) and runs by opening the HTML file directly in a browser.
 
 | Game | Model | Date | Status |
 | --- | --- | --- | --- |
-| [Neon Drift](neon-glow-platformer/) | 256K Context - llama.cpp - RTX 5090 | 2026-08-19 | Playable |
+| [Neon Drift](neon-drift/) | 256K Context - llama.cpp - RTX 5090 | 2026-08-19 | Playable |
 
-Each game folder contains the game files plus a `GAME.md` with the full
+Each game folder contains the game files plus a `README.md` with the full
 working prompt, exact model, and build notes.
 
 ## How a game gets added
@@ -27,12 +27,23 @@ working prompt, exact model, and build notes.
    9-section format).
 2. A model builds the game to match the working prompt.
 3. The game is verified in a browser (zero console errors).
-4. `GAME.md` is written and the index above is updated.
+4. The game's `README.md` is written and the index above is updated.
 5. Committed with a `Generated-with: <model>` trailer and pushed.
+
+## Structure
+
+```
+test-projects/
+├── README.md                  ← this index
+├── .github/copilot-instructions.md
+└── <game-name>/               ← kebab-case, no date suffix
+    ├── README.md              ← metadata + working prompt + notes
+    └── <game-name>.html       ← the game (index.html if multi-file)
+```
 
 ## Conventions
 
 - One folder per game (kebab-case, no date suffix — git tracks dates).
-- `GAME.md` per game: metadata + working prompt + notes.
+- `README.md` per game: metadata + working prompt + notes.
 - Exact model name recorded, never a vague label.
 - Commit trailer: `Generated-with: <exact model name>`.

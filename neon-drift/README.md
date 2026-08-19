@@ -56,9 +56,17 @@ jump), `R` to restart, `M` to mute. Coyote time and jump buffering for feel.
   collectible.
 - Sparks (collectibles, +score) and star powerups (overdrive).
 - Checkpoints: respawn point on death; the most recent one is active.
+- **Lives:** the player starts each run with **3 lives**. Each death costs one
+  life and pauses on the stats screen; pressing any key/click respawns at the
+  last checkpoint. Every **50 sparks** collected grants **+1 life** (capped at
+  9), with a brief HUD flash and a chime. Losing the final life shows a
+  **GAME OVER** screen; the next input performs a **full level restart** (new
+  seed, distance/score/sparks reset, lives back to 3).
 - **Death screen:** on death the game pauses on a stats screen (distance,
-  sparks, score, best) and does **not** auto-respawn. The player must press any
-  key or click to respawn at the last checkpoint. `R` restarts the whole run.
+  sparks, score, best) and does **not** auto-respawn. A **NEW BEST!** callout
+  appears when the run's distance beats the best at the start of the run. The
+  player must press any key or click to respawn at the last checkpoint (or
+  restart, if out of lives). `R` restarts the whole run.
 
 **Progression (procedural):**
 - Levels are generated from seeded RNG chunks appended ahead of the player and
@@ -72,7 +80,8 @@ jump), `R` to restart, `M` to mute. Coyote time and jump buffering for feel.
 
 **Scope:**
 - In: endless procedural platformer, the systems above, persistent best
-  distance (`localStorage`), death → stats screen → manual checkpoint respawn.
+  distance (`localStorage`), lives (3 start, +1 per 50 sparks, full restart on
+  game over), death → stats screen → manual checkpoint respawn.
 - Out: no multiplayer, no full run-state save, no image assets (all
   vector-drawn), no build step.
 
@@ -86,6 +95,8 @@ jump), `R` to restart, `M` to mute. Coyote time and jump buffering for feel.
 - Feels responsive (coyote time, buffered jumps, capped fall).
 - Difficulty clearly ramps; death pauses on the stats screen and respawns at
   the last checkpoint on input; best distance persists across reloads.
+- Lives work: 3 at start, −1 per death, +1 per 50 sparks (cap 9), GAME OVER at
+  0 lives, and the next input fully restarts the level.
 
 ## Notes
 
@@ -109,3 +120,10 @@ jump), `R` to restart, `M` to mute. Coyote time and jump buffering for feel.
   flat when idle and bank up/down with horizontal velocity. Verified the shift
   value eases 0 → +44 (right) → −40 (left) → 0 (release) with 0 console errors;
   feel/visuals confirmed by the player.
+- Added **lives + NEW BEST callout** (2026-08-19): 3 starting lives, −1 per
+  death, +1 per 50 sparks (cap 9, HUD flash + chime), GAME OVER at 0 lives with
+  a full level restart on the next input, and a NEW BEST! callout on the death
+  screen when the run beats the best at run start. Verified in browser — start
+  3 lives, death → "LIVES 2" respawn prompt, respawn restores play, 50th spark
+  → +1 life, 0 lives → GAME OVER, respawn at 0 lives → full restart (3 lives,
+  distance 0). 0 console errors.

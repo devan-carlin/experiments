@@ -56,6 +56,7 @@
     position: fixed;
     inset: 0;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
@@ -123,6 +124,9 @@ let hueBase;
 let melt;
 let phase;
 let terrainShift;
+let lives;
+let lifeFlash;
+let runStartBest;
 
 let keys = {};
 let jumpQueued = false;
@@ -568,6 +572,9 @@ function resetGame() {
   melt = 0;
   phase = 0;
   terrainShift = 0;
+  lives = 3;
+  lifeFlash = 0;
+  runStartBest = bestDist;
   gen.distance = 0;
   gen.deaths = 0;
 }
@@ -779,6 +786,30 @@ function sfxStomp() {
   playTone(120, "square", 0.12, 0.15, 60);
 }
 
+
+function sfxLife() {
+  if (!audio || muted) return;
+
+  const t = audio.ctx.currentTime;
+  const notes = [523.25, 659.25, 783.99];
+
+  for (let i = 0; i < notes.length; i++) {
+    const o = audio.ctx.createOscillator();
+    const g = audio.ctx.createGain();
+
+    o.type = "square";
+    o.frequency.value = notes[i];
+
+    g.gain.setValueAtTime(0.09, t + i * 0.09);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.09 + 0.12);
+
+    o.connect(g);
+    g.connect(audio.master);
+
+    o.start(t + i * 0.09);
+    o.stop(t + i * 0.09 + 0.14);
+  }
+}
 function sfxShoot() {
   playTone(880, "sawtooth", 0.12, 0.08, 220);
 }
@@ -1115,8 +1146,10 @@ function die() {
   state = "dead";
   jumpQueued = false;
   gen.deaths++;
+  lives--;
 
   const dist = Math.floor(gen.distance);
+  const isNewBest = dist > runStartBest;
   if (dist > bestDist) {
     bestDist = dist;
     try {
@@ -1127,16 +1160,37 @@ function die() {
   sfxDeath();
   addBurst(player.x + player.w / 2, player.y + player.h / 2, "death");
 
-  msg.innerHTML =
-    `DRIFT ENDED<br>` +
+  const stats =
     `<span style="font-size:16px">DIST ${dist}m &nbsp; SPARKS ${sparksCollected} &nbsp; SCORE ${score}</span><br>` +
-    `<span style="font-size:14px">BEST ${Math.floor(bestDist)}m</span><br>` +
-    `<span style="font-size:14px">press any key or click to respawn</span>`;
+    (isNewBest
+      ? `<span style="font-size:18px;color:#ff0;text-shadow:0 0 12px #ff0">NEW BEST!</span><br>`
+      : "") +
+    `<span style="font-size:14px">BEST ${Math.floor(bestDist)}m</span><br>`;
+
+  if (lives > 0) {
+    msg.innerHTML =
+      `DRIFT ENDED<br>` +
+      stats +
+      `<span style="font-size:14px">LIVES ${lives} &mdash; press any key or click to respawn</span>`;
+  } else {
+    msg.innerHTML =
+      `GAME OVER<br>` +
+      stats +
+      `<span style="font-size:14px">all lives lost &mdash; press any key or click to restart</span>`;
+  }
   msg.classList.remove("hidden");
 }
 
 function respawn() {
   if (state !== "dead") return;
+
+  if (lives <= 0) {
+    // Out of lives: full level restart
+    resetGame();
+    state = "play";
+    msg.classList.add("hidden");
+    return;
+  }
 
   player.x = lastCheckpoint.x;
   player.y = lastCheckpoint.y;
@@ -1169,6 +1223,10 @@ function update(dt) {
       strobe = Math.max(0, strobe - dt);
     }
 
+    if (lifeFlash > 0) {
+      lifeFlash = Math.max(0, lifeFlash - dt);
+    }
+
     ensureChunks();
     updatePlatforms(dt);
     updatePlayer(dt);
@@ -1198,6 +1256,13 @@ function update(dt) {
         score += 10;
         sfxSpark();
         addBurst(sp.x, sp.y, "spark");
+
+        // Every 50 diamonds grants an extra life (max 9)
+        if (sparksCollected % 50 === 0 && lives < 9) {
+          lives++;
+          lifeFlash = 1.2;
+          sfxLife();
+        }
       }
     }
 
@@ -1711,6 +1776,7 @@ function render() {
   canvas.style.filter = filterParts.join(" ");
 
   ui.innerHTML =
+    `LIVES ${"◆".repeat(Math.max(0, lives))}${lifeFlash > 0 ? ` <span style="color:#ff0;text-shadow:0 0 10px #ff0">+1</span>` : ""}<br>` +
     `DIST ${Math.floor(gen.distance)}m<br>` +
     `BEST ${Math.floor(bestDist)}m<br>` +
     `SPARKS ${sparksCollected}<br>` +
@@ -1739,6 +1805,7 @@ state = "start";
 msg.innerHTML =
   `NEON DRIFT<br>` +
   `<span style="font-size:16px">ENDLESS DRIFT &mdash; how far can you go?</span><br>` +
+  `<span style="font-size:14px">3 lives &mdash; every 50 diamonds = +1 life</span><br>` +
   `<span style="font-size:14px">A D or arrows move<br>SPACE jump / double jump<br>R restart &nbsp; M mute</span>` +
   (bestDist > 0 ? `<br><span style="font-size:14px">BEST ${Math.floor(bestDist)}m</span>` : "");
 

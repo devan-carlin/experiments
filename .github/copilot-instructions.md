@@ -40,9 +40,18 @@ A working prompt has these sections:
 8. **Constraints** — technical limits (single-file HTML, no deps, etc.).
 9. **Success criteria** — what "done" and "good" look like.
 
-The working prompt is the **source of truth**. Build the game to match it. If
-the build reveals the prompt was missing something, update the prompt so it
-stays canonical.
+The working prompt is the **source of truth** and a **living document**. Build
+the game to match it. As the project evolves — new features, refactors, bug
+fixes, changed mechanics — **update the working prompt in `GAME.md` to reflect
+the game's current state.** The prompt should always describe what the game
+*does now*, not what it originally did. If the build reveals the prompt was
+missing something, add it. If a feature is removed or changed, revise the
+prompt to match.
+
+Treat the working prompt as the canonical context for the project: it is what
+a model (or a human) needs to understand and continue the game. Keep it
+current so it stays a faithful, self-contained description of the game as it
+exists today.
 
 ## Conventions
 
@@ -58,6 +67,8 @@ stays canonical.
 
 ## Workflow
 
+**Initial build:**
+
 1. User gives a raw idea.
 2. Refactor it into a working prompt (all 9 sections).
 3. Confirm the working prompt with the user.
@@ -66,3 +77,12 @@ stays canonical.
 6. Write `GAME.md` (metadata + working prompt + notes).
 7. Update the `README.md` index.
 8. Commit with the `Generated-with:` trailer and push.
+
+**Ongoing work (features, refactors, fixes):**
+
+1. Make the change to the game.
+2. Verify it runs (open in browser, check for console errors).
+3. **Update the working prompt in `GAME.md`** so it reflects the game's
+   current state — this is required, not optional.
+4. Add a note to `GAME.md` describing the change.
+5. Commit with the `Generated-with:` trailer and push.

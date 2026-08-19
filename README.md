@@ -1,21 +1,38 @@
-# Experiments
+# Experiments — AI Game Benchmark
 
-A collection of small, self-contained test games and experiments. Each game lives in its own folder and runs by opening the HTML file directly in a browser — no build step, no dependencies.
+A collection of **AI-generated test games**. Each game is built from a
+**working prompt** — a comprehensive, self-contained spec that a model can take
+and build the game from. The working prompt is the canonical artifact committed
+here; raw conversation is not.
+
+The purpose is to compare model capabilities: give a model a well-specified
+prompt and see what it builds. The working prompt is the controlled variable.
+
+Every game is self-contained (single-file HTML, no build step, no
+dependencies) and runs by opening the HTML file directly in a browser.
 
 ## Games
 
-| Game | Folder | Description |
-| --- | --- | --- |
-| **Neon Drift** | [`neon-glow-platformer/`](neon-glow-platformer/) | Endless neon platformer with procedurally generated levels, checkpoints, and a persistent best-distance score. |
+| Game | Model | Date | Status |
+| --- | --- | --- | --- |
+| [Neon Drift](neon-glow-platformer/) | 256K Context - llama.cpp - RTX 5090 | 2026-08-19 | Playable |
 
-### Neon Drift
+Each game folder contains the game files plus a `GAME.md` with the full
+working prompt, exact model, and build notes.
 
-- **Play:** open [`neon-glow-platformer/Neon Glow - Platformer.html`](neon-glow-platformer/Neon Glow - Platformer.html) in any modern browser.
-- **Controls:** `A`/`D` or arrow keys to move, `Space` to jump / double-jump, `R` to restart, `M` to mute.
-- **How it works:** levels are generated from seeded chunks (gaps, spikes, patrolling enemies, moving platforms, stairs, overdrive gauntlets) with a difficulty ramp. Chunks stream in ahead of the player and are culled behind, so the run is endless. Best distance is saved to `localStorage`.
+## How a game gets added
 
-## Adding a new experiment
+1. A raw idea is refactored into a **working prompt** (see
+   [.github/copilot-instructions.md](.github/copilot-instructions.md) for the
+   9-section format).
+2. A model builds the game to match the working prompt.
+3. The game is verified in a browser (zero console errors).
+4. `GAME.md` is written and the index above is updated.
+5. Committed with a `Generated-with: <model>` trailer and pushed.
 
-1. Create a new folder at the top level (e.g. `my-new-game/`).
-2. Drop the game files in it.
-3. Add a row to the table above.
+## Conventions
+
+- One folder per game (kebab-case, no date suffix — git tracks dates).
+- `GAME.md` per game: metadata + working prompt + notes.
+- Exact model name recorded, never a vague label.
+- Commit trailer: `Generated-with: <exact model name>`.

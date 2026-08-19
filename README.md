@@ -1,5 +1,10 @@
 # Experiments — AI Game Benchmark
 
+> **Disclaimer:** Every game in this repo is **AI-generated**. This is a fun
+> way to test out local LLM capabilities — each game is built by a model from a
+> written prompt, and the record of which model built what lives in each game's
+> `README.md`.
+
 A collection of **AI-generated test games**. Each game is built from a
 **working prompt** — a comprehensive, self-contained spec that a model can take
 and build the game from. The working prompt is the canonical artifact committed

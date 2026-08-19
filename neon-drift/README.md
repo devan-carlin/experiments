@@ -42,6 +42,13 @@ jump), `R` to restart, `M` to mute. Coyote time and jump buffering for feel.
 - Horizontally oscillating moving platforms that carry the player.
 - Spikes (instant death) and patrolling triangular enemies (stomp to kill,
   touch from the side to die).
+- **Shooter turrets** — stationary spiky enemies that aim and fire homing
+  bullets at the player when in range (~640px, and only when the player is to
+  their left). Bullets travel in a straight line toward where the player was
+  when fired; a bullet hit is instant death. Shooters are stompable like other
+  enemies. They appear in hazard and overdrive chunks. Visually a red spiked
+  ball (sharp radiating spikes + pulsing core) so they read as a threat, not a
+  collectible.
 - Sparks (collectibles, +score) and star powerups (overdrive).
 - Checkpoints: respawn point on death; the most recent one is active.
 
@@ -80,3 +87,8 @@ jump), `R` to restart, `M` to mute. Coyote time and jump buffering for feel.
   difficulty ramp and streaming/culling.
 - Verified in browser: generates, plays, dies, respawns at checkpoint, and
   saves best distance. 0 console errors.
+- Added **shooter turrets** (2026-08-19): stationary spiky enemies that fire
+  straight-line bullets at the player in range. Verified in browser — shooters
+  spawn, fire, bullets kill on contact, and shooters are stompable. 0 console
+  errors. First drawn as a diamond it read as a collectible, so it was
+  redesigned as a red spiked ball to read as a threat.

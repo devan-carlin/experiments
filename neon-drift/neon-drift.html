@@ -250,6 +250,24 @@ function E(tx1, tx2, ty = 12) {
   });
 }
 
+function SH(tx, ty = 12) {
+  const y = ty * TILE - 34;
+  level.enemies.push({
+    x: tx * TILE,
+    y,
+    w: 34,
+    h: 34,
+    shooter: true,
+    minX: tx * TILE,
+    maxX: tx * TILE,
+    dir: 1,
+    speed: 0,
+    t: rand() * 6,
+    fireTimer: 1 + rand() * 1.5,
+    dead: false
+  });
+}
+
 function CP(tx, ty = 11) {
   level.checkpoints.push({
     x: tx * TILE,
@@ -286,6 +304,7 @@ function generateLevel() {
     spikes: [],
     sparks: [],
     enemies: [],
+    bullets: [],
     checkpoints: [],
     powerups: [],
     goal: null,
@@ -389,7 +408,11 @@ function genChunkHazards(d) {
       P(s3 + 2, 9, 3);
       SP(s3 + 3, 8);
     } else {
-      E(gen.cur + 4, gen.cur + w - 4);
+      if (rand() < 0.5) {
+        SH(gen.cur + 10, 12);
+      } else {
+        E(gen.cur + 4, gen.cur + w - 4);
+      }
       P(gen.cur + 6, 9, 3);
       SP(gen.cur + 7, 8);
       P(gen.cur + 12, 9, 3);
@@ -459,6 +482,7 @@ function genChunkOverdrive(d) {
   P(gen.cur + 16, 9, 4);
   SP(gen.cur + 17, 8);
   E(gen.cur + 16, gen.cur + 20, 9);
+  SH(gen.cur + 24, 12);
   CP(gen.cur + Math.floor(w / 2), 11);
 
   gen.cur += w;
@@ -502,6 +526,7 @@ function ensureChunks() {
   level.spikes = level.spikes.filter((s) => s.x + s.w > cut * TILE);
   level.sparks = level.sparks.filter((s) => !s.got && s.x > cut * TILE);
   level.enemies = level.enemies.filter((e) => !e.dead && e.x + e.w > cut * TILE);
+  level.bullets = level.bullets.filter((b) => b.x > cut * TILE);
   level.checkpoints = level.checkpoints.filter((c) => c.x > cut * TILE);
   level.powerups = level.powerups.filter((p) => !p.got && p.x > cut * TILE);
 }
@@ -752,6 +777,10 @@ function sfxStomp() {
   playTone(120, "square", 0.12, 0.15, 60);
 }
 
+function sfxShoot() {
+  playTone(880, "sawtooth", 0.12, 0.08, 220);
+}
+
 function startGame() {
   if (state === "start") {
     initAudio();
@@ -953,6 +982,33 @@ function updateEnemies(dt) {
     if (e.dead) continue;
 
     e.t += dt * 3;
+
+    if (e.shooter) {
+      // Stationary turret: aims and fires at the player when in range
+      e.fireTimer -= dt;
+      const ex = e.x + e.w / 2;
+      const ey = e.y + e.h / 2;
+      const px = player.x + player.w / 2;
+      const py = player.y + player.h / 2;
+      const dx = px - ex;
+      const dy = py - ey;
+      const dist = Math.hypot(dx, dy);
+
+      if (e.fireTimer <= 0 && dist < 640 && dx < 0) {
+        e.fireTimer = 1.4 - diff() * 0.5;
+        const sp = 420 + diff() * 160;
+        level.bullets.push({
+          x: ex,
+          y: ey,
+          vx: (dx / dist) * sp,
+          vy: (dy / dist) * sp,
+          t: 0
+        });
+        sfxShoot();
+      }
+      continue;
+    }
+
     e.x += e.dir * e.speed * dt;
 
     if (e.x < e.minX) {
@@ -963,6 +1019,27 @@ function updateEnemies(dt) {
     if (e.x > e.maxX - e.w) {
       e.x = e.maxX - e.w;
       e.dir = -1;
+    }
+  }
+}
+
+function updateBullets(dt) {
+  for (let i = level.bullets.length - 1; i >= 0; i--) {
+    const b = level.bullets[i];
+
+    b.t += dt;
+    b.x += b.vx * dt;
+    b.y += b.vy * dt;
+
+    if (b.t > 3 || b.y > WORLD_H + 100 || b.y < -100) {
+      level.bullets.splice(i, 1);
+      continue;
+    }
+
+    if (aabb(player, { x: b.x - 6, y: b.y - 6, w: 12, h: 12 })) {
+      level.bullets.splice(i, 1);
+      die();
+      return;
     }
   }
 }
@@ -1087,6 +1164,10 @@ function update(dt) {
     if (state !== "play") return;
 
     updateEnemies(dt);
+
+    if (state !== "play") return;
+
+    updateBullets(dt);
 
     if (state !== "play") return;
 
@@ -1402,7 +1483,7 @@ function drawEnemies() {
   for (const e of level.enemies) {
     if (e.dead) continue;
 
-    const hue = (hueBase + 220) % 360;
+    const hue = e.shooter ? (hueBase + 350) % 360 : (hueBase + 220) % 360;
 
     ctx.save();
     ctx.translate(e.x + e.w / 2, e.y + e.h / 2);
@@ -1412,10 +1493,61 @@ function drawEnemies() {
     ctx.shadowColor = `hsla(${hue},100%,70%,1)`;
     ctx.fillStyle = `hsla(${hue},100%,70%,0.95)`;
 
+    if (e.shooter) {
+      // Spiky turret: a spiked ball with sharp radiating spikes
+      const spikes = 10;
+      const inner = 11;
+      const outer = 20;
+
+      ctx.beginPath();
+      for (let i = 0; i < spikes * 2; i++) {
+        const a = (i / (spikes * 2)) * Math.PI * 2;
+        const rr = i % 2 === 0 ? outer : inner;
+        const px = Math.cos(a) * rr;
+        const py = Math.sin(a) * rr;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fill();
+
+      // Pulsing core
+      const pulse = 0.5 + Math.sin(e.t * 6) * 0.5;
+      ctx.fillStyle = `hsla(${(hue + 30) % 360},100%,85%,${0.6 + pulse * 0.4})`;
+      ctx.beginPath();
+      ctx.arc(0, 0, 4 + pulse * 3, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.beginPath();
+      ctx.moveTo(0, -16);
+      ctx.lineTo(14, 12);
+      ctx.lineTo(-14, 12);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    ctx.restore();
+  }
+
+  ctx.shadowBlur = 0;
+}
+
+function drawBullets() {
+  for (const b of level.bullets) {
+    const hue = (hueBase + 350) % 360;
+
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    ctx.rotate(Math.atan2(b.vy, b.vx));
+
+    ctx.shadowBlur = 14;
+    ctx.shadowColor = `hsla(${hue},100%,70%,1)`;
+    ctx.fillStyle = `hsla(${hue},100%,75%,0.95)`;
+
     ctx.beginPath();
-    ctx.moveTo(0, -16);
-    ctx.lineTo(14, 12);
-    ctx.lineTo(-14, 12);
+    ctx.moveTo(9, 0);
+    ctx.lineTo(-6, 5);
+    ctx.lineTo(-6, -5);
     ctx.closePath();
     ctx.fill();
 
@@ -1496,6 +1628,7 @@ function render() {
   drawCheckpoints();
   drawPowerups();
   drawEnemies();
+  drawBullets();
   drawParticles();
   drawPlayer();
 

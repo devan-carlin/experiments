@@ -51,6 +51,9 @@ jump), `R` to restart, `M` to mute. Coyote time and jump buffering for feel.
   collectible.
 - Sparks (collectibles, +score) and star powerups (overdrive).
 - Checkpoints: respawn point on death; the most recent one is active.
+- **Death screen:** on death the game pauses on a stats screen (distance,
+  sparks, score, best) and does **not** auto-respawn. The player must press any
+  key or click to respawn at the last checkpoint. `R` restarts the whole run.
 
 **Progression (procedural):**
 - Levels are generated from seeded RNG chunks appended ahead of the player and
@@ -64,7 +67,7 @@ jump), `R` to restart, `M` to mute. Coyote time and jump buffering for feel.
 
 **Scope:**
 - In: endless procedural platformer, the systems above, persistent best
-  distance (`localStorage`), death → checkpoint respawn.
+  distance (`localStorage`), death → stats screen → manual checkpoint respawn.
 - Out: no multiplayer, no full run-state save, no image assets (all
   vector-drawn), no build step.
 
@@ -76,8 +79,8 @@ jump), `R` to restart, `M` to mute. Coyote time and jump buffering for feel.
 **Success criteria:**
 - Runs with zero console errors; generates and streams levels indefinitely.
 - Feels responsive (coyote time, buffered jumps, capped fall).
-- Difficulty clearly ramps; death respawns at the last checkpoint; best
-  distance persists across reloads.
+- Difficulty clearly ramps; death pauses on the stats screen and respawns at
+  the last checkpoint on input; best distance persists across reloads.
 
 ## Notes
 
@@ -92,3 +95,7 @@ jump), `R` to restart, `M` to mute. Coyote time and jump buffering for feel.
   spawn, fire, bullets kill on contact, and shooters are stompable. 0 console
   errors. First drawn as a diamond it read as a collectible, so it was
   redesigned as a red spiked ball to read as a threat.
+- Changed death to **pause on the stats screen** (2026-08-19): removed the
+  auto-respawn timer; the player now presses any key or clicks to respawn at
+  the last checkpoint. Verified in browser — stays on the death screen until
+  input, then respawns. 0 console errors.
